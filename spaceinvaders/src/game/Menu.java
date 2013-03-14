@@ -9,10 +9,12 @@ public class Menu extends BasicGameState {
 	
 	// do all variables/objects get declared here?
 	
-	Image fontImage;
-	Image scaledFontImage;
+	Image fontImage, scaledFontImage, menuImage, ss, selector;
+
+	SpriteSheet ssf;
 	SpriteSheet spritesheet;
-	SpriteSheetFont ssf;
+	SpriteSheetFont myFont;
+	
 	int scale, windowHeightCenter, windowWidthCenter, gomWidth, gomHeight;
 	String gameOverMessage;
 	
@@ -20,23 +22,37 @@ public class Menu extends BasicGameState {
 	
 	public void init(GameContainer gc, StateBasedGame sbg) throws SlickException {
 		
-		scale = 2;
+		// menu images, probably should be less images, less images = more fps/less memory
 		fontImage = new Image("/res/icons.png");
-		scaledFontImage = fontImage.getScaledCopy(scale);
-		spritesheet = new SpriteSheet(scaledFontImage, (8 * scale), (8 * scale), (1 * scale), (1 * scale));
-		ssf = new SpriteSheetFont(spritesheet, ' ');
+		menuImage = new Image("/res/menu.jpg");
+		//ss = new Image("/res/sprites.png");
 		
+		// actual spritesheet
+		//spritesheet = new SpriteSheet(ss, 128, 128);
+		//selector = spritesheet.getSubImage(62, 30);
+		
+		// font stuff
+		scale = 2;
+		scaledFontImage = fontImage.getScaledCopy(scale);
+		ssf = new SpriteSheet(scaledFontImage, (8 * scale), (8 * scale), (1 * scale), (1 * scale));
+		myFont = new SpriteSheetFont(ssf, ' ');
+		
+		// centering text/images on the window
 		windowWidthCenter = gc.getWidth() / 2;
 		windowHeightCenter = gc.getHeight() / 2 ;
 		gameOverMessage = "game over!";
-		gomWidth = ssf.getWidth(gameOverMessage) / 2;
-		gomHeight = ssf.getHeight(gameOverMessage) / 2;
+		gomWidth = myFont.getWidth(gameOverMessage) / 2;
+		gomHeight = myFont.getHeight(gameOverMessage) / 2;
 		
 	}
 	
 	public void render(GameContainer gc, StateBasedGame sbg, Graphics g) throws SlickException {
 		
-		ssf.drawString(windowWidthCenter - gomWidth, windowHeightCenter - gomHeight, "game over!".toUpperCase());
+		//ssf.drawString(windowWidthCenter - gomWidth, windowHeightCenter - gomHeight, "game over!".toUpperCase());
+		menuImage.draw((windowWidthCenter - gomWidth) / 5, 50);
+		myFont.drawString(windowWidthCenter - gomWidth + 62, (windowHeightCenter - gomHeight) + 75, "play".toUpperCase());
+		myFont.drawString(windowWidthCenter - gomWidth + 62, (windowHeightCenter - gomHeight) + 110, "exit".toUpperCase());
+		//selector.draw(300,300);
 	}
 	
 	public void update(GameContainer gc, StateBasedGame sbg, int delta) throws SlickException {

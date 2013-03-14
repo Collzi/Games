@@ -1,15 +1,12 @@
 package game;
 
-import org.newdawn.slick.SlickException;
-
 public class Player {
+	
+	private int startPosX, startPosY;
 	
 	public Player() {}
 	
-	public void draw() throws SlickException {}
-	
-	public void die() {}
+	public void draw() {}
 	
 	public void update() {}
-	
 }

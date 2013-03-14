@@ -1,0 +1,291 @@
+diff --git a/spaceinvaders/bin/game/Enemy.class b/spaceinvaders/bin/game/Enemy.class
+index 6d2eab4..ff61db0 100644
+--- a/spaceinvaders/bin/game/Enemy.class
++++ b/spaceinvaders/bin/game/Enemy.class
+Binary files differ
+diff --git a/spaceinvaders/bin/game/Menu.class b/spaceinvaders/bin/game/Menu.class
+index 1a30481..ecfb072 100644
+--- a/spaceinvaders/bin/game/Menu.class
++++ b/spaceinvaders/bin/game/Menu.class
+Binary files differ
+diff --git a/spaceinvaders/bin/game/Play.class b/spaceinvaders/bin/game/Play.class
+index f017582..bb70063 100644
+--- a/spaceinvaders/bin/game/Play.class
++++ b/spaceinvaders/bin/game/Play.class
+Binary files differ
+diff --git a/spaceinvaders/bin/game/Player.class b/spaceinvaders/bin/game/Player.class
+index 9fa3426..a7412c3 100644
+--- a/spaceinvaders/bin/game/Player.class
++++ b/spaceinvaders/bin/game/Player.class
+Binary files differ
+diff --git a/spaceinvaders/res/sprites.png b/spaceinvaders/res/sprites.png
+index 7ef3d2d..3702a85 100644
+--- a/spaceinvaders/res/sprites.png
++++ b/spaceinvaders/res/sprites.png
+Binary files differ
+diff --git a/spaceinvaders/res/sprites_ts.png b/spaceinvaders/res/sprites_ts.png
+new file mode 100644
+index 0000000..fb588d7
+--- /dev/null
++++ b/spaceinvaders/res/sprites_ts.png
+Binary files differ
+diff --git a/spaceinvaders/src/game/Enemy.java b/spaceinvaders/src/game/Enemy.java
+index 3c58d4e..8d2308e 100644
+--- a/spaceinvaders/src/game/Enemy.java
++++ b/spaceinvaders/src/game/Enemy.java
+@@ -1,15 +1,26 @@
+ package game;
+ 
++import org.newdawn.slick.Image;
++import org.newdawn.slick.Animation;
+ import org.newdawn.slick.SlickException;
+ 
++// duration to be changed in Enemy class with
++// method stop, stopat, start, isstopped, setautoupdate, setcurrentframe
++
+ public class Enemy {
++
++	private int startPosX, startPosY;
++	Animation enemyType;
+ 	
+-	public Enemy() {}
++	public Enemy(int x, int y, Animation e) {
++		this.startPosX = x;
++		this.startPosY = y;
++		this.enemyType = e;
++	}
+ 	
+-	public void draw() throws SlickException {}
+-	
+-	public void die() {}
++	public void draw() throws SlickException {
++		enemyType.draw(startPosX, startPosY);
++	}
+ 	
+ 	public void update() {}
+-	
+ }
+diff --git a/spaceinvaders/src/game/Menu.java b/spaceinvaders/src/game/Menu.java
+index 3d6e17d..fd285e6 100644
+--- a/spaceinvaders/src/game/Menu.java
++++ b/spaceinvaders/src/game/Menu.java
+@@ -9,10 +9,12 @@
+ 	
+ 	// do all variables/objects get declared here?
+ 	
+-	Image fontImage;
+-	Image scaledFontImage;
++	Image fontImage, scaledFontImage, menuImage, ss, selector;
++
++	SpriteSheet ssf;
+ 	SpriteSheet spritesheet;
+-	SpriteSheetFont ssf;
++	SpriteSheetFont myFont;
++	
+ 	int scale, windowHeightCenter, windowWidthCenter, gomWidth, gomHeight;
+ 	String gameOverMessage;
+ 	
+@@ -20,23 +22,37 @@
+ 	
+ 	public void init(GameContainer gc, StateBasedGame sbg) throws SlickException {
+ 		
+-		scale = 2;
++		// menu images, probably should be less images, less images = more fps/less memory
+ 		fontImage = new Image("/res/icons.png");
+-		scaledFontImage = fontImage.getScaledCopy(scale);
+-		spritesheet = new SpriteSheet(scaledFontImage, (8 * scale), (8 * scale), (1 * scale), (1 * scale));
+-		ssf = new SpriteSheetFont(spritesheet, ' ');
++		menuImage = new Image("/res/menu.jpg");
++		//ss = new Image("/res/sprites.png");
+ 		
++		// actual spritesheet
++		//spritesheet = new SpriteSheet(ss, 128, 128);
++		//selector = spritesheet.getSubImage(62, 30);
++		
++		// font stuff
++		scale = 2;
++		scaledFontImage = fontImage.getScaledCopy(scale);
++		ssf = new SpriteSheet(scaledFontImage, (8 * scale), (8 * scale), (1 * scale), (1 * scale));
++		myFont = new SpriteSheetFont(ssf, ' ');
++		
++		// centering text/images on the window
+ 		windowWidthCenter = gc.getWidth() / 2;
+ 		windowHeightCenter = gc.getHeight() / 2 ;
+ 		gameOverMessage = "game over!";
+-		gomWidth = ssf.getWidth(gameOverMessage) / 2;
+-		gomHeight = ssf.getHeight(gameOverMessage) / 2;
++		gomWidth = myFont.getWidth(gameOverMessage) / 2;
++		gomHeight = myFont.getHeight(gameOverMessage) / 2;
+ 		
+ 	}
+ 	
+ 	public void render(GameContainer gc, StateBasedGame sbg, Graphics g) throws SlickException {
+ 		
+-		ssf.drawString(windowWidthCenter - gomWidth, windowHeightCenter - gomHeight, "game over!".toUpperCase());
++		//ssf.drawString(windowWidthCenter - gomWidth, windowHeightCenter - gomHeight, "game over!".toUpperCase());
++		menuImage.draw((windowWidthCenter - gomWidth) / 5, 50);
++		myFont.drawString(windowWidthCenter - gomWidth + 62, (windowHeightCenter - gomHeight) + 75, "play".toUpperCase());
++		myFont.drawString(windowWidthCenter - gomWidth + 62, (windowHeightCenter - gomHeight) + 110, "exit".toUpperCase());
++		//selector.draw(300,300);
+ 	}
+ 	
+ 	public void update(GameContainer gc, StateBasedGame sbg, int delta) throws SlickException {
+diff --git a/spaceinvaders/src/game/Play.java b/spaceinvaders/src/game/Play.java
+index feac63c..1ba1291 100644
+--- a/spaceinvaders/src/game/Play.java
++++ b/spaceinvaders/src/game/Play.java
+@@ -1,36 +1,118 @@
+ package game;
+ 
++import java.util.ArrayList;
++import java.util.Iterator;
++
+ import org.newdawn.slick.*;
+ import org.newdawn.slick.state.*;
+ 
+ public class Play extends BasicGameState {
+-	
+-	Player player;
+-	Enemy[] enemies;
+-	int enemy;
+ 
++	private int i, startPosX, startPosY;
++	boolean counter;
++	
++	ArrayList<Enemy> enemies;
++	Enemy temp;
++	Iterator<Enemy> it;
++	Player player;
++
++	Image sheet;
++	Image[] c, s, o;
++	
++	Animation crab, skull, octopus;
+ 	
+ 	public Play(int state) {}
+ 	
+ 	public void init(GameContainer gc, StateBasedGame sbg) throws SlickException {
++
++		sheet = new Image("/res/sprites_ts.png");
+ 		
++		c[0] = sheet.getSubImage(3, 3, 11, 8);
++		c[1] = sheet.getSubImage(17, 3, 11, 8);
++		o[0] = sheet.getSubImage(31, 3, 8, 8);
++		o[1] = sheet.getSubImage(42, 3, 8, 8);
++		s[0] = sheet.getSubImage(3, 16, 12, 8);
++		s[1] = sheet.getSubImage(18, 16, 12, 8); 
++		
++		crab = new Animation(c, 1); // duration to be changed in Enemy class with method stop,stopat,start,isstopped,setautoupdate,setcurrentframe
++		skull = new Animation(s, 1);
++		octopus = new Animation(o, 1);
++		
++		startPosX = 50;
++		startPosY = 100;
++		
++		i = 1;
++		counter = false;
++		
++		while (counter == false) {
++			
++			switch (i) {
++				case 1:
++					i += 10;
++					for (int k = 0; k == 11; k++) {
++						temp = new Enemy(startPosX, startPosY, octopus);
++						startPosX += 50;
++						enemies.add(temp);
++					}
++				case 12:
++					i += 10;
++					startPosX = 50;
++					startPosY += 100;
++					for (int k = 0; k == 11; k++) {
++						temp = new Enemy(startPosX, startPosY, crab);
++						startPosX += 50;
++						enemies.add(temp);
++					}
++				case 23:
++					i += 10;
++					startPosX = 50;
++					startPosY += 100;
++					for (int k = 0; k == 11; k++) {
++						temp = new Enemy(startPosX, startPosY, crab);
++						startPosX += 50;
++						enemies.add(temp);
++					}
++				case 34:
++					i += 10;
++					startPosX = 50;
++					startPosY += 100;
++					for (int k = 0; k == 11; k++) {
++						temp = new Enemy(startPosX, startPosY, skull);
++						startPosX += 50;
++						enemies.add(temp);
++					}
++				case 45:
++					i += 10;
++					startPosX = 50;
++					startPosY += 100;
++					for (int k = 0; k == 11; k++) {
++						temp = new Enemy(startPosX, startPosY, skull);
++						startPosX += 50;
++						enemies.add(temp);
++					}
++				case -1: 
++					counter = true;
++					break;
++			}
++			
++			i++;
++		}
+ 		player = new Player();
+-		enemies = new Enemy[56];
+ 	}
+-	
++
+ 	public void render(GameContainer gc, StateBasedGame sbg, Graphics g) throws SlickException {
++		
++		for (Enemy i : enemies) { i.draw(); }
+ 		player.draw();
+-		enemies[enemy].draw();
+ 	}
+ 	
+ 	public void update(GameContainer gc, StateBasedGame sbg, int delta) throws SlickException {
++
++		for (Enemy i: enemies) { i.update(); }
+ 		player.update();
+-		enemies[enemy].update();
+-		enemy++;
+ 	}
+ 	
+ 	public int getID() {
+ 		return 1;
+ 	}
+-
+ }
+\ No newline at end of file
+diff --git a/spaceinvaders/src/game/Player.java b/spaceinvaders/src/game/Player.java
+index a2fcc86..19fac5d 100644
+--- a/spaceinvaders/src/game/Player.java
++++ b/spaceinvaders/src/game/Player.java
+@@ -1,15 +1,12 @@
+ package game;
+ 
+-import org.newdawn.slick.SlickException;
+-
+ public class Player {
++	
++	private int startPosX, startPosY;
+ 	
+ 	public Player() {}
+ 	
+-	public void draw() throws SlickException {}
+-	
+-	public void die() {}
++	public void draw() {}
+ 	
+ 	public void update() {}
+-	
+-}
+\ No newline at end of file
++}
